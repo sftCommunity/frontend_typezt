@@ -1,84 +1,139 @@
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { IconBrandGithub, IconBrandGoogle, IconBrandOnlyfans } from '@tabler/icons-react';
-import { Input, Label, TextGenerateEffect } from '@/components';
+import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
+import { Input, Label, TextGenerateEffect, MultiStepLoader as Loader } from '@/components';
 import HyperText from '@/components/ui/hyper-text';
 import { CommandLineIcon } from '@heroicons/react/16/solid';
+import { AuthService } from '@/core/services';
+import { Form, Formik } from 'formik';
+import type { ISigninForm } from '@/core/interfaces';
+import * as Yup from 'yup';
+import { useAuthStore } from '@/core/store';
+import { useRouter } from 'next/navigation';
 
 export function SigninForm() {
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		console.log('Form submitted');
+	const router = useRouter();
+
+	const [loading, setLoading] = React.useState(false);
+	const [errors, setErrors] = React.useState<boolean>(false);
+
+	const { setUser, setToken } = useAuthStore();
+
+	const loadingStates = [
+		{
+			text: 'Sending data to the server',
+		},
+		{
+			text: 'validationg credentials',
+		},
+		{
+			text: 'Checking if you are a robot',
+		},
+	];
+
+	const initialValues: ISigninForm = {
+		email: 'user@example.com',
+		password: 'Abc123456@',
 	};
+
+	const validationSchema = Yup.object({
+		email: Yup.string().email('Invalid email address').required('Required'),
+		password: Yup.string().required('Required'),
+	});
+
+	async function handleSubmit(credentials: typeof initialValues) {
+		setLoading(true);
+		await AuthService.signin(credentials)
+			.then((r) => {
+				setUser(r.user);
+				setToken(r.token);
+				router.replace('/');
+			})
+			.catch(() => setErrors(true))
+			.finally(() => {
+				setLoading(false);
+			});
+	}
+
 	return (
-		<div className='p-4 mx-auto rounded-none md:rounded-2xl md:p-8 shadow-input bg-white/10 backdrop-blur-3xl dark:bg-black/10 w-96'>
-			<div className='flex gap-2'>
-				<CommandLineIcon className='h-8 w-8 fill-white' />
-				<HyperText
-					className='font-bold text-xl text-neutral-800 dark:text-neutral-200'
-					text='Typezt'
-				/>
-			</div>
-			<TextGenerateEffect
-				className='text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300'
-				words={`Please enter your details`}
+		<>
+			<Loader
+				loadingStates={loadingStates}
+				loading={loading}
+				duration={2000}
 			/>
-			;
-			<form
-				className='my-8'
-				onSubmit={handleSubmit}>
-				<LabelInputContainer className='mb-4'>
-					<Label htmlFor='email'>Email Address</Label>
-					<Input
-						id='email'
-						placeholder='projectmayhem@fc.com'
-						type='email'
+			<div className='p-4 mx-auto rounded-none md:rounded-2xl md:p-8 shadow-input bg-white/10 backdrop-blur-3xl dark:bg-black/10 w-96'>
+				<div className='flex gap-2'>
+					<CommandLineIcon className='h-8 w-8 fill-white' />
+					<HyperText
+						className='font-bold text-xl text-neutral-800 dark:text-neutral-200'
+						text='Typezt'
 					/>
-				</LabelInputContainer>
-				<LabelInputContainer className='mb-4'>
-					<Label htmlFor='password'>Password</Label>
-					<Input
-						id='password'
-						placeholder='••••••••'
-						type='password'
-					/>
-				</LabelInputContainer>
-
-				<button
-					className='bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]'
-					type='submit'>
-					Sign in &rarr;
-					<BottomGradient />
-				</button>
-
-				<div className='bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full' />
-
-				<div className='flex flex-col space-y-4'>
-					<button
-						className=' relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]'
-						type='submit'>
-						<IconBrandGithub className='h-4 w-4 text-neutral-800 dark:text-neutral-300' />
-						<span className='text-neutral-700 dark:text-neutral-300 text-sm'>GitHub</span>
-						<BottomGradient />
-					</button>
-					<button
-						className=' relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]'
-						type='submit'>
-						<IconBrandGoogle className='h-4 w-4 text-neutral-800 dark:text-neutral-300' />
-						<span className='text-neutral-700 dark:text-neutral-300 text-sm'>Google</span>
-						<BottomGradient />
-					</button>
-					<button
-						className=' relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]'
-						type='submit'>
-						<IconBrandOnlyfans className='h-4 w-4 text-neutral-800 dark:text-neutral-300' />
-						<span className='text-neutral-700 dark:text-neutral-300 text-sm'>OnlyFans</span>
-						<BottomGradient />
-					</button>
 				</div>
-			</form>
-		</div>
+				<TextGenerateEffect
+					className='text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300'
+					words={`Please enter your details`}
+				/>
+				<Formik
+					validationSchema={validationSchema}
+					initialValues={initialValues}
+					onSubmit={handleSubmit}>
+					{({ values, handleChange }) => (
+						<Form className='my-8'>
+							<LabelInputContainer className='mb-4'>
+								<Label htmlFor='email'>Email Address</Label>
+								<Input
+									id='email'
+									name='email'
+									placeholder='projectmayhem@fc.com'
+									type='email'
+									value={values.email}
+									onChange={handleChange}
+								/>
+							</LabelInputContainer>
+							<LabelInputContainer className='mb-4'>
+								<Label htmlFor='password'>Password</Label>
+								<Input
+									id='password'
+									name='password'
+									placeholder='••••••••'
+									type='password'
+									value={values.password}
+									onChange={handleChange}
+								/>
+							</LabelInputContainer>
+
+							<button
+								className='bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]'
+								type='submit'>
+								Sign in &rarr;
+								<BottomGradient />
+							</button>
+
+							<div className='bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full' />
+
+							<div className='flex flex-col space-y-4'>
+								<button
+									className=' relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]'
+									type='submit'>
+									<IconBrandGithub className='h-4 w-4 text-neutral-800 dark:text-neutral-300' />
+									<span className='text-neutral-700 dark:text-neutral-300 text-sm'>GitHub</span>
+									<BottomGradient />
+								</button>
+								<button
+									className=' relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]'
+									type='submit'>
+									<IconBrandGoogle className='h-4 w-4 text-neutral-800 dark:text-neutral-300' />
+									<span className='text-neutral-700 dark:text-neutral-300 text-sm'>Google</span>
+									<BottomGradient />
+								</button>
+							</div>
+						</Form>
+					)}
+				</Formik>
+			</div>
+		</>
 	);
 }
 
