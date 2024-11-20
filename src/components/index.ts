@@ -6,3 +6,6 @@ export * from './ui/text-generate-effect';
 export * from './ui/hyper-text';
 export * from './ui/multi-step-loader';
 export * from './ui/sidebar';
+export * from './ui/bento-grid';
+export * from './ui/evervault-card';
+export * from './ui/3d-pin';
