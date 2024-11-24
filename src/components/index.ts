@@ -9,3 +9,4 @@ export * from './ui/sidebar';
 export * from './ui/bento-grid';
 export * from './ui/evervault-card';
 export * from './ui/3d-pin';
+export * from './ui/typewriter-effect';
