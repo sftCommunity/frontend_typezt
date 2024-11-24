@@ -2,12 +2,17 @@
 import React from 'react';
 import Image from 'next/image';
 
-import { Sidebar, SidebarBody, SidebarLink } from '@/components';
 import { IconBrandTabler, IconUserBolt, IconSettings, IconArrowLeft } from '@tabler/icons-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Sidebar, SidebarBody, SidebarLink } from '@/components';
 
 const links = [
+	{
+		label: "Let's type",
+		href: '/typer',
+		icon: <IconBrandTabler className='text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0' />,
+	},
 	{
 		label: 'Feed',
 		href: '/feed',
